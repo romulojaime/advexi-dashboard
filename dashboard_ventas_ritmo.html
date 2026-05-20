@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ADVEXI Ventas — Ritmo Lento · 20/05/2026</title>
+<style>
+  :root {
+    --bg:#0f172a; --card:#1e293b; --card2:#263348; --border:#334155;
+    --text:#e2e8f0; --muted:#94a3b8;
+    --red:#ef4444; --amber:#f59e0b; --green:#10b981; --blue:#3b82f6;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif;
+         font-size:13px; line-height:1.5; display:flex; flex-direction:column; min-height:100vh; }
+
+  /* HEADER fijo */
+  .top-bar { position:sticky; top:0; z-index:100;
+              background:var(--card); border-bottom:1px solid var(--border);
+              padding:14px 28px; display:flex; align-items:center; gap:20px; }
+  .logo { font-size:20px; font-weight:800; color:#fff; letter-spacing:-.5px; }
+  .logo span { color:#3b82f6; }
+  .top-title { font-size:14px; font-weight:700; }
+  .top-sub   { font-size:11px; color:var(--muted); }
+  .top-date  { margin-left:auto; font-size:11px; color:var(--muted); white-space:nowrap; }
+
+  /* MAIN */
+  .main { max-width:1380px; margin:0 auto; padding:24px 20px 60px; flex:1; }
+
+  /* KPI strip */
+  .kpi-strip { display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; }
+  .kpi { background:var(--card); border:1px solid var(--border); border-radius:10px;
+         padding:10px 16px; min-width:110px; }
+  .kpi-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px; }
+  .kpi-val   { font-size:22px; font-weight:800; }
+  .red   { color:var(--red); }
+  .amber { color:var(--amber); }
+  .green { color:var(--green); }
+  .blue  { color:var(--blue); }
+
+  /* TABLE — header sticky */
+  .table-wrap { overflow-x:auto; border-radius:12px; border:1px solid var(--border);
+                max-height:calc(100vh - 200px); overflow-y:auto; }
+  table { width:100%; border-collapse:collapse; }
+  thead th {
+    position:sticky; top:0; z-index:10;
+    background:var(--card2);
+    padding:9px 12px; text-align:left;
+    font-size:10px; font-weight:700; color:var(--muted);
+    text-transform:uppercase; letter-spacing:.5px;
+    border-bottom:2px solid var(--border);
+    white-space:nowrap;
+    box-shadow: 0 1px 0 var(--border);
+  }
+  tbody tr { border-bottom:1px solid rgba(51,65,85,.4); transition:background .1s; }
+  tbody tr:last-child { border-bottom:none; }
+  tbody tr:hover { background:rgba(255,255,255,.03); }
+  td { padding:8px 12px; vertical-align:middle; }
+
+  .num  { color:var(--muted); font-size:11px; width:28px; }
+  .sku  { font-family:monospace; font-size:11.5px; color:#93c5fd; white-space:nowrap; }
+  .desc { color:var(--muted); max-width:240px; font-size:12px; }
+  .right { text-align:right; }
+  .badge { display:inline-block; padding:2px 7px; border-radius:4px;
+           font-size:11px; font-weight:700; color:#fff; }
+
+  /* bar ritmo */
+  .bar-wrap  { display:flex; align-items:center; gap:8px; min-width:150px; }
+  .bar-bg    { flex:1; height:6px; background:rgba(255,255,255,.08); border-radius:3px; overflow:hidden; }
+  .bar-fill  { height:100%; border-radius:3px; min-width:2px; }
+  .bar-label { font-size:12px; font-weight:700; width:42px; text-align:right; flex-shrink:0; }
+
+  /* stock */
+  .s-zero    { color:var(--red);   font-weight:700; }
+  .s-low     { color:var(--amber); font-weight:700; }
+  .s-ok      { color:var(--green); font-weight:600; }
+  .t-ok      { color:var(--blue);  font-weight:600; }
+  .t-no      { color:var(--muted); }
+
+  /* legend */
+  .legend { display:flex; gap:16px; margin-top:10px; flex-wrap:wrap; }
+  .leg { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--muted); }
+  .dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+
+  .footer { text-align:center; color:var(--muted); font-size:11px;
+            padding:16px; border-top:1px solid var(--border); }
+
+  thead th { background:#1a1f2e; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div>
+    <div class="logo">ADVE<span>XI</span> <span style="font-size:13px;font-weight:400;color:var(--muted)">/ Ventas</span></div>
+  </div>
+  <div style="border-left:1px solid var(--border);padding-left:20px">
+    <div class="top-title" style="color:var(--amber)">📉 Ritmo de consumo lento</div>
+    <div class="top-sub">SKUs con stock suficiente pero pace &lt;85% del ritmo esperado (día 20/31)</div>
+  </div>
+  <div class="top-date">Día 20/31 · 20/05/2026</div>
+</div>
+
+<div class="main">
+  <div class="kpi-strip">
+    <div class="kpi"><div class="kpi-label">SKUs afectados</div><div class="kpi-val amber">47</div></div>
+    <div class="kpi"><div class="kpi-label">Clase A</div><div class="kpi-val red">31</div></div>
+    <div class="kpi"><div class="kpi-label">Crítico &lt;40%</div><div class="kpi-val red">20</div></div>
+    <div class="kpi"><div class="kpi-label">Bajo 40–70%</div><div class="kpi-val amber">17</div></div>
+    <div class="kpi"><div class="kpi-label">Mod. 70–85%</div><div class="kpi-val green">10</div></div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>SKU</th><th>ABC</th><th>Descripción</th>
+          <th class="right">Stock</th>
+          <th class="right">Prom 3M</th>
+          <th class="right">Esp. a hoy</th>
+          <th class="right">Cons Mayo</th>
+          <th>Ritmo</th>
+          <th>Proveedor</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="num">1</td>
+      <td class="sku">NAVOYA100EDTC</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Nautica Voyage 100 ml Eau de Toilette Caballe">Nautica Voyage 100 ml Eau de Toilette …</td>
+      <td class="right"><span class="s-ok">51</span></td>
+      <td class="right" style="font-weight:600">43.0</td>
+      <td class="right" style="color:var(--muted)">27.7</td>
+      <td class="right" style="font-weight:600">2</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:7.2%;background:#ef4444"></div></div><span class="bar-label" style="color:#ef4444">7.2%</span></div></td>
+      <td>Gala</td>
+    </tr><tr>
+      <td class="num">2</td>
+      <td class="sku">NACLAS100EDTC</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Nautica Classic 100 ml Eau de Toilette Caball">Nautica Classic 100 ml Eau de Toilette…</td>
+      <td class="right"><span class="s-ok">166</span></td>
+      <td class="right" style="font-weight:600">42.3</td>
+      <td class="right" style="color:var(--muted)">27.3</td>
+      <td class="right" style="font-weight:600">2</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:7.3%;background:#ef4444"></div></div><span class="bar-label" style="color:#ef4444">7.3%</span></div></td>
+      <td>Gala</td>
+    </tr><tr>
+      <td class="num">3</td>
+      <td class="sku">CKSHOC100EDTC</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Calvin Klein CK One Shock 100 ml Eua de Toile">Calvin Klein CK One Shock 100 ml Eua d…</td>
+      <td class="right"><span class="s-ok">51</span></td>
+      <td class="right" style="font-weight:600">17.7</td>
+      <td class="right" style="color:var(--muted)">11.4</td>
+      <td class="right" style="font-weight:600">1</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:8.8%;background:#ef4444"></div></div><span class="bar-label" style="color:#ef4444">8.8%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">4</td>
+      <td class="sku">PHPARI100EDTC</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Paris Hilton Paris Hilton 100 ml Eau de Toile">Paris Hilton Paris Hilton 100 ml Eau d…</td>
+      <td class="right"><span class="s-ok">24</span></td>
+      <td class="right" style="font-weight:600">13.3</td>
+      <td class="right" style="color:var(--muted)">8.6</td>
+      <td class="right" style="font-weight:600">1</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:11.6%;background:#ef4444"></div></div><span class="bar-label" style="color:#ef4444">11.6%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">5</td>
+      <td class="sku">AGCLPI100EDPD</td>
+      <td><span class="badge" style="background:#f59e0b">B</span></td>
+      <td class="desc" title="Ariana Grande Cloud Pink 100 ml Eau de Parfum">Ariana Grande Cloud Pink 100 ml Eau de…</td>
+      <td class="right"><span class="s-ok">25</span></td>
+      <td class="right" style="font-weight:600">11.7</td>
+      <td class="right" style="color:var(--muted)">7.5</td>
+      <td class="right" style="font-weight:600">1</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:13.3%;background:#ef4444"></div></div><span class="bar-label" style="color:#ef4444">13.3%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">6</td>
+      <td class="sku">NABLUE100EDTC</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Nautica Blue 100 ml Eau De Toilette Caballero">Nautica Blue 100 ml Eau De Toilette Ca…</td>
+      <td class="right"><span class="s-ok">184</span></td>
+      <td class="right" style="font-weight:600">46.3</td>
+      <td class="right" style="color:var(--muted)">29.9</td>
+      <td class="right" style="font-weight:600">4</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:13.4%;background:#ef4444"></div></div><span class="bar-label" style="color:#ef4444">13.4%</span></div></td>
+      <td>Gala</td>
+    </tr><tr>
+      <td class="num">7</td>
+      <td class="sku">AHAOGL200EDPD</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Al Haramain Amber Oud Gold Eau de Parfum 200 ">Al Haramain Amber Oud Gold Eau de Parf…</td>
+      <td class="right"><span class="s-ok">30</span></td>
+      <td class="right" style="font-weight:600">10.7</td>
+      <td class="right" style="color:var(--muted)">6.9</td>
+      <td class="right" style="font-weight:600">1</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:14.5%;background:#ef4444"></div></div><span class="bar-label" style="color:#ef4444">14.5%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">8</td>
+      <td class="sku">GSMARC100EDPD</td>
+      <td><span class="badge" style="background:#f59e0b">B</span></td>
+      <td class="desc" title="Guess Marciano 100 ml Eau de Parfum Dama">Guess Marciano 100 ml Eau de Parfum Da…</td>
+      <td class="right"><span class="s-ok">8</span></td>
+      <td class="right" style="font-weight:600">8.7</td>
+      <td class="right" style="color:var(--muted)">5.6</td>
+      <td class="right" style="font-weight:600">1</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:17.9%;background:#ef4444"></div></div><span class="bar-label" style="color:#ef4444">17.9%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">9</td>
+      <td class="sku">CKCKON100EDTU</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Calvin Klein CK ONE 100 ml Eau de Toilette Un">Calvin Klein CK ONE 100 ml Eau de Toil…</td>
+      <td class="right"><span class="s-ok">110</span></td>
+      <td class="right" style="font-weight:600">48.3</td>
+      <td class="right" style="color:var(--muted)">31.2</td>
+      <td class="right" style="font-weight:600">6</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:19.2%;background:#ef4444"></div></div><span class="bar-label" style="color:#ef4444">19.2%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">10</td>
+      <td class="sku">CRPITC100EDTC</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Cristiano Ronaldo CR7 Play It Cool 100 ml Eau">Cristiano Ronaldo CR7 Play It Cool 100…</td>
+      <td class="right"><span class="s-ok">10</span></td>
+      <td class="right" style="font-weight:600">7.7</td>
+      <td class="right" style="color:var(--muted)">5.0</td>
+      <td class="right" style="font-weight:600">1</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:20.0%;background:#ef4444"></div></div><span class="bar-label" style="color:#ef4444">20.0%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">11</td>
+      <td class="sku">THTOMM100EDTC</td>
+      <td><span class="badge" style="background:#94a3b8">C</span></td>
+      <td class="desc" title="Tommy Hilfiger Tommy 100 ml Eau de Toilette C">Tommy Hilfiger Tommy 100 ml Eau de Toi…</td>
+      <td class="right"><span class="s-ok">2</span></td>
+      <td class="right" style="font-weight:600">6.3</td>
+      <td class="right" style="color:var(--muted)">4.1</td>
+      <td class="right" style="font-weight:600">1</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:24.4%;background:#ef4444"></div></div><span class="bar-label" style="color:#ef4444">24.4%</span></div></td>
+      <td>Gala</td>
+    </tr><tr>
+      <td class="num">12</td>
+      <td class="sku">CKESCA100EDTC</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Calvin Klein Escape 100ML Eau de Toilette Cab">Calvin Klein Escape 100ML Eau de Toile…</td>
+      <td class="right"><span class="s-ok">20</span></td>
+      <td class="right" style="font-weight:600">16.7</td>
+      <td class="right" style="color:var(--muted)">10.8</td>
+      <td class="right" style="font-weight:600">3</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:27.8%;background:#ef4444"></div></div><span class="bar-label" style="color:#ef4444">27.8%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">13</td>
+      <td class="sku">CKSHOC100EDTD</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Calvin Klein Ck One Shock 100 ml Eau de Toile">Calvin Klein Ck One Shock 100 ml Eau d…</td>
+      <td class="right"><span class="s-ok">23</span></td>
+      <td class="right" style="font-weight:600">16.3</td>
+      <td class="right" style="color:var(--muted)">10.5</td>
+      <td class="right" style="font-weight:600">3</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:28.6%;background:#ef4444"></div></div><span class="bar-label" style="color:#ef4444">28.6%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">14</td>
+      <td class="sku">ARCDNU105EDPC</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Armaf Club de Nuit Untold 105 ml Eau de Parfu">Armaf Club de Nuit Untold 105 ml Eau d…</td>
+      <td class="right"><span class="s-ok">57</span></td>
+      <td class="right" style="font-weight:600">30.0</td>
+      <td class="right" style="color:var(--muted)">19.4</td>
+      <td class="right" style="font-weight:600">6</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:30.9%;background:#ef4444"></div></div><span class="bar-label" style="color:#ef4444">30.9%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">15</td>
+      <td class="sku">GUS319100EDTC</td>
+      <td><span class="badge" style="background:#f59e0b">B</span></td>
+      <td class="desc" title="Guess Set 3 1981 100ml Eau de Toilette Caball">Guess Set 3 1981 100ml Eau de Toilette…</td>
+      <td class="right"><span class="s-ok">10</span></td>
+      <td class="right" style="font-weight:600">9.3</td>
+      <td class="right" style="color:var(--muted)">6.0</td>
+      <td class="right" style="font-weight:600">2</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:33.3%;background:#ef4444"></div></div><span class="bar-label" style="color:#ef4444">33.3%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">16</td>
+      <td class="sku">CKCKBE100EDTU</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Calvin Klein CK Be 100 ml Eau de Toilette Uni">Calvin Klein CK Be 100 ml Eau de Toile…</td>
+      <td class="right"><span class="s-ok">74</span></td>
+      <td class="right" style="font-weight:600">27.3</td>
+      <td class="right" style="color:var(--muted)">17.6</td>
+      <td class="right" style="font-weight:600">6</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:34.1%;background:#ef4444"></div></div><span class="bar-label" style="color:#ef4444">34.1%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">17</td>
+      <td class="sku">PE360R100EDTC</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Perry Ellis 360° Red 100 ml Eau de Toilette C">Perry Ellis 360° Red 100 ml Eau de Toi…</td>
+      <td class="right"><span class="s-ok">3</span></td>
+      <td class="right" style="font-weight:600">4.3</td>
+      <td class="right" style="color:var(--muted)">2.8</td>
+      <td class="right" style="font-weight:600">1</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:35.7%;background:#ef4444"></div></div><span class="bar-label" style="color:#ef4444">35.7%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">18</td>
+      <td class="sku">KPPURR100EDPD</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Purr Katy Perry Eau De Parfum Spray 100ml">Purr Katy Perry Eau De Parfum Spray 10…</td>
+      <td class="right"><span class="s-ok">129</span></td>
+      <td class="right" style="font-weight:600">67.3</td>
+      <td class="right" style="color:var(--muted)">43.4</td>
+      <td class="right" style="font-weight:600">16</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:36.9%;background:#ef4444"></div></div><span class="bar-label" style="color:#ef4444">36.9%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">19</td>
+      <td class="sku">DKD100100EDPD</td>
+      <td><span class="badge" style="background:#94a3b8">C</span></td>
+      <td class="desc" title="DKNY Be Delicious 100% 100 ml Eau de Parfum D">DKNY Be Delicious 100% 100 ml Eau de P…</td>
+      <td class="right"><span class="s-ok">24</span></td>
+      <td class="right" style="font-weight:600">8.0</td>
+      <td class="right" style="color:var(--muted)">5.2</td>
+      <td class="right" style="font-weight:600">2</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:38.5%;background:#ef4444"></div></div><span class="bar-label" style="color:#ef4444">38.5%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">20</td>
+      <td class="sku">AG0REM100EDPD</td>
+      <td><span class="badge" style="background:#f59e0b">B</span></td>
+      <td class="desc" title="Ariana Grande R.E.M. 100 ml Eau de Parfum Dam">Ariana Grande R.E.M. 100 ml Eau de Par…</td>
+      <td class="right"><span class="s-ok">2</span></td>
+      <td class="right" style="font-weight:600">4.0</td>
+      <td class="right" style="color:var(--muted)">2.6</td>
+      <td class="right" style="font-weight:600">1</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:38.5%;background:#ef4444"></div></div><span class="bar-label" style="color:#ef4444">38.5%</span></div></td>
+      <td>Gala</td>
+    </tr><tr>
+      <td class="num">21</td>
+      <td class="sku">JOMUSK325EDCD</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Jovan Musk For Women Cologne EDC 3.25oz">Jovan Musk For Women Cologne EDC 3.25o…</td>
+      <td class="right"><span class="s-ok">29</span></td>
+      <td class="right" style="font-weight:600">19.0</td>
+      <td class="right" style="color:var(--muted)">12.3</td>
+      <td class="right" style="font-weight:600">5</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:40.7%;background:#f59e0b"></div></div><span class="bar-label" style="color:#f59e0b">40.7%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">22</td>
+      <td class="sku">ARCDMI100EDPU</td>
+      <td><span class="badge" style="background:#94a3b8">C</span></td>
+      <td class="desc" title="Armaf Club de Nuit Milestone 100 ml Eau de Pa">Armaf Club de Nuit Milestone 100 ml Ea…</td>
+      <td class="right"><span class="s-ok">12</span></td>
+      <td class="right" style="font-weight:600">3.7</td>
+      <td class="right" style="color:var(--muted)">2.4</td>
+      <td class="right" style="font-weight:600">1</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:41.7%;background:#f59e0b"></div></div><span class="bar-label" style="color:#f59e0b">41.7%</span></div></td>
+      <td>Inicial</td>
+    </tr><tr>
+      <td class="num">23</td>
+      <td class="sku">CKIN2U150EDTD</td>
+      <td><span class="badge" style="background:#f59e0b">B</span></td>
+      <td class="desc" title="Calvin Klein CKin2u 150 ml Eau de Toilette Da">Calvin Klein CKin2u 150 ml Eau de Toil…</td>
+      <td class="right"><span class="s-ok">19</span></td>
+      <td class="right" style="font-weight:600">3.7</td>
+      <td class="right" style="color:var(--muted)">2.4</td>
+      <td class="right" style="font-weight:600">1</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:41.7%;background:#f59e0b"></div></div><span class="bar-label" style="color:#f59e0b">41.7%</span></div></td>
+      <td>Inicial</td>
+    </tr><tr>
+      <td class="num">24</td>
+      <td class="sku">GUSEHO100EDTC</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Guess Seductive Homme 100 ml Eau de Toilette ">Guess Seductive Homme 100 ml Eau de To…</td>
+      <td class="right"><span class="s-ok">54</span></td>
+      <td class="right" style="font-weight:600">29.3</td>
+      <td class="right" style="color:var(--muted)">18.9</td>
+      <td class="right" style="font-weight:600">8</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:42.3%;background:#f59e0b"></div></div><span class="bar-label" style="color:#f59e0b">42.3%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">25</td>
+      <td class="sku">CKFREE100EDTC</td>
+      <td><span class="badge" style="background:#f59e0b">B</span></td>
+      <td class="desc" title="Calvin Klein CK Free 100 ml Eau de Toilette C">Calvin Klein CK Free 100 ml Eau de Toi…</td>
+      <td class="right"><span class="s-ok">6</span></td>
+      <td class="right" style="font-weight:600">11.0</td>
+      <td class="right" style="color:var(--muted)">7.1</td>
+      <td class="right" style="font-weight:600">3</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:42.3%;background:#f59e0b"></div></div><span class="bar-label" style="color:#f59e0b">42.3%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">26</td>
+      <td class="sku">AGARII236BMID</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Ariana Grande Ari 236 ml Body Mist Dama">Ariana Grande Ari 236 ml Body Mist Dam…</td>
+      <td class="right"><span class="s-ok">37</span></td>
+      <td class="right" style="font-weight:600">20.0</td>
+      <td class="right" style="color:var(--muted)">12.9</td>
+      <td class="right" style="font-weight:600">6</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:46.5%;background:#f59e0b"></div></div><span class="bar-label" style="color:#f59e0b">46.5%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">27</td>
+      <td class="sku">BEFMEN100EDTC</td>
+      <td><span class="badge" style="background:#f59e0b">B</span></td>
+      <td class="desc" title="Bentley For Men 100 ml Eau de Toilette Caball">Bentley For Men 100 ml Eau de Toilette…</td>
+      <td class="right"><span class="s-ok">11</span></td>
+      <td class="right" style="font-weight:600">6.7</td>
+      <td class="right" style="color:var(--muted)">4.3</td>
+      <td class="right" style="font-weight:600">2</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:46.5%;background:#f59e0b"></div></div><span class="bar-label" style="color:#f59e0b">46.5%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">28</td>
+      <td class="sku">GUGOLD075EDPD</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Guess Gold 75 ml Eau De Parfum Dama">Guess Gold 75 ml Eau De Parfum Dama</td>
+      <td class="right"><span class="s-ok">17</span></td>
+      <td class="right" style="font-weight:600">19.0</td>
+      <td class="right" style="color:var(--muted)">12.3</td>
+      <td class="right" style="font-weight:600">6</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:48.8%;background:#f59e0b"></div></div><span class="bar-label" style="color:#f59e0b">48.8%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">29</td>
+      <td class="sku">CKSHOC200EDTD</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Calvin Klein Ck One Shock 200 ml Eau de Toile">Calvin Klein Ck One Shock 200 ml Eau d…</td>
+      <td class="right"><span class="s-ok">22</span></td>
+      <td class="right" style="font-weight:600">6.3</td>
+      <td class="right" style="color:var(--muted)">4.1</td>
+      <td class="right" style="font-weight:600">2</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:48.8%;background:#f59e0b"></div></div><span class="bar-label" style="color:#f59e0b">48.8%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">30</td>
+      <td class="sku">AGARII100EDPD</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Ariana Grande Ari 100 ml Eau De Parfum Dama">Ariana Grande Ari 100 ml Eau De Parfum…</td>
+      <td class="right"><span class="s-ok">57</span></td>
+      <td class="right" style="font-weight:600">38.3</td>
+      <td class="right" style="color:var(--muted)">24.7</td>
+      <td class="right" style="font-weight:600">13</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:52.6%;background:#f59e0b"></div></div><span class="bar-label" style="color:#f59e0b">52.6%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">31</td>
+      <td class="sku">KPMEOW100EDPD</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Meow de Katy Perry Eau de Parfum 100 ml">Meow de Katy Perry Eau de Parfum 100 m…</td>
+      <td class="right"><span class="s-ok">197</span></td>
+      <td class="right" style="font-weight:600">111.7</td>
+      <td class="right" style="color:var(--muted)">72.1</td>
+      <td class="right" style="font-weight:600">38</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:52.7%;background:#f59e0b"></div></div><span class="bar-label" style="color:#f59e0b">52.7%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">32</td>
+      <td class="sku">AHAOGD100EDPD</td>
+      <td><span class="badge" style="background:#f59e0b">B</span></td>
+      <td class="desc" title="Al Haramain Amber Oud Gold Edition Eau de Par">Al Haramain Amber Oud Gold Edition Eau…</td>
+      <td class="right"><span class="s-ok">38</span></td>
+      <td class="right" style="font-weight:600">11.0</td>
+      <td class="right" style="color:var(--muted)">7.1</td>
+      <td class="right" style="font-weight:600">4</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:56.3%;background:#f59e0b"></div></div><span class="bar-label" style="color:#f59e0b">56.3%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">33</td>
+      <td class="sku">BSFANT236BMID</td>
+      <td><span class="badge" style="background:#94a3b8">C</span></td>
+      <td class="desc" title="Britney Spears Fantasy 236 ml Body Mist Dama">Britney Spears Fantasy 236 ml Body Mis…</td>
+      <td class="right"><span class="s-ok">26</span></td>
+      <td class="right" style="font-weight:600">5.3</td>
+      <td class="right" style="color:var(--muted)">3.4</td>
+      <td class="right" style="font-weight:600">2</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:58.8%;background:#f59e0b"></div></div><span class="bar-label" style="color:#f59e0b">58.8%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">34</td>
+      <td class="sku">CKSHOC200EDTC</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Calvin Klein CK One Shock 200 ml Eau de Toile">Calvin Klein CK One Shock 200 ml Eau d…</td>
+      <td class="right"><span class="s-ok">5</span></td>
+      <td class="right" style="font-weight:600">7.7</td>
+      <td class="right" style="color:var(--muted)">5.0</td>
+      <td class="right" style="font-weight:600">3</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:60.0%;background:#f59e0b"></div></div><span class="bar-label" style="color:#f59e0b">60.0%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">35</td>
+      <td class="sku">GNATOM005MLUN</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Mini Atomizador Para Perfume Recargable 5ml">Mini Atomizador Para Perfume Recargabl…</td>
+      <td class="right"><span class="s-ok">79</span></td>
+      <td class="right" style="font-weight:600">192.3</td>
+      <td class="right" style="color:var(--muted)">124.1</td>
+      <td class="right" style="font-weight:600">78</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:62.9%;background:#f59e0b"></div></div><span class="bar-label" style="color:#f59e0b">62.9%</span></div></td>
+      <td>Pily</td>
+    </tr><tr>
+      <td class="num">36</td>
+      <td class="sku">BSFANT100EDPD</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Britney Spears Fantasy 100 ml Eau de Parfum D">Britney Spears Fantasy 100 ml Eau de P…</td>
+      <td class="right"><span class="s-ok">126</span></td>
+      <td class="right" style="font-weight:600">64.7</td>
+      <td class="right" style="color:var(--muted)">41.7</td>
+      <td class="right" style="font-weight:600">29</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:69.5%;background:#f59e0b"></div></div><span class="bar-label" style="color:#f59e0b">69.5%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">37</td>
+      <td class="sku">PHHEIR100EDPD</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Paris Hilton Heiress 100 Ml Eau de Parfum Dam">Paris Hilton Heiress 100 Ml Eau de Par…</td>
+      <td class="right"><span class="s-ok">62</span></td>
+      <td class="right" style="font-weight:600">49.0</td>
+      <td class="right" style="color:var(--muted)">31.6</td>
+      <td class="right" style="font-weight:600">22</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:69.6%;background:#f59e0b"></div></div><span class="bar-label" style="color:#f59e0b">69.6%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">38</td>
+      <td class="sku">PHPARI100EDPD</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Paris Hilton Paris Hilton 100 ml Eau De Parfu">Paris Hilton Paris Hilton 100 ml Eau D…</td>
+      <td class="right"><span class="s-ok">83</span></td>
+      <td class="right" style="font-weight:600">48.7</td>
+      <td class="right" style="color:var(--muted)">31.4</td>
+      <td class="right" style="font-weight:600">24</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:76.4%;background:#10b981"></div></div><span class="bar-label" style="color:#10b981">76.4%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">39</td>
+      <td class="sku">CKETFL100EDPD</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Calvin Klein Eternity Flame 100 ml Eau de Par">Calvin Klein Eternity Flame 100 ml Eau…</td>
+      <td class="right"><span class="s-ok">40</span></td>
+      <td class="right" style="font-weight:600">32.3</td>
+      <td class="right" style="color:var(--muted)">20.8</td>
+      <td class="right" style="font-weight:600">16</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:76.9%;background:#10b981"></div></div><span class="bar-label" style="color:#10b981">76.9%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">40</td>
+      <td class="sku">PES3MR030EDTC</td>
+      <td><span class="badge" style="background:#f59e0b">B</span></td>
+      <td class="desc" title="Perry Ellis Set 3 pzs 360 Man, Red, Reserve 3">Perry Ellis Set 3 pzs 360 Man, Red, Re…</td>
+      <td class="right"><span class="s-ok">23</span></td>
+      <td class="right" style="font-weight:600">6.0</td>
+      <td class="right" style="color:var(--muted)">3.9</td>
+      <td class="right" style="font-weight:600">3</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:76.9%;background:#10b981"></div></div><span class="bar-label" style="color:#10b981">76.9%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">41</td>
+      <td class="sku">CKCKBE200EDTU</td>
+      <td><span class="badge" style="background:#f59e0b">B</span></td>
+      <td class="desc" title="Calvin Klein CK Be 200 ml Eau de Toilette Uni">Calvin Klein CK Be 200 ml Eau de Toile…</td>
+      <td class="right"><span class="s-ok">32</span></td>
+      <td class="right" style="font-weight:600">6.0</td>
+      <td class="right" style="color:var(--muted)">3.9</td>
+      <td class="right" style="font-weight:600">3</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:76.9%;background:#10b981"></div></div><span class="bar-label" style="color:#10b981">76.9%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">42</td>
+      <td class="sku">GUDARE100EDTD</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Guess Dare 100 ml Eau de Toilette Dama">Guess Dare 100 ml Eau de Toilette Dama</td>
+      <td class="right"><span class="s-ok">24</span></td>
+      <td class="right" style="font-weight:600">14.0</td>
+      <td class="right" style="color:var(--muted)">9.0</td>
+      <td class="right" style="font-weight:600">7</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:77.8%;background:#10b981"></div></div><span class="bar-label" style="color:#10b981">77.8%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">43</td>
+      <td class="sku">PHS4HE100EDPD</td>
+      <td><span class="badge" style="background:#f59e0b">B</span></td>
+      <td class="desc" title="Paris Hilton Set 4 pzs Heiress 100 Ml Eau de ">Paris Hilton Set 4 pzs Heiress 100 Ml …</td>
+      <td class="right"><span class="s-ok">36</span></td>
+      <td class="right" style="font-weight:600">23.7</td>
+      <td class="right" style="color:var(--muted)">15.3</td>
+      <td class="right" style="font-weight:600">12</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:78.4%;background:#10b981"></div></div><span class="bar-label" style="color:#10b981">78.4%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">44</td>
+      <td class="sku">DKDELI100EDPD</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="DKNY Be Delicious 100 ml Eau de Parfum Dama">DKNY Be Delicious 100 ml Eau de Parfum…</td>
+      <td class="right"><span class="s-ok">21</span></td>
+      <td class="right" style="font-weight:600">11.7</td>
+      <td class="right" style="color:var(--muted)">7.5</td>
+      <td class="right" style="font-weight:600">6</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:80.0%;background:#10b981"></div></div><span class="bar-label" style="color:#10b981">80.0%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">45</td>
+      <td class="sku">PES4DA100EDPD</td>
+      <td><span class="badge" style="background:#f59e0b">B</span></td>
+      <td class="desc" title="Perry Ellis Set 4 pzs 360 100 ml Eau de Toile">Perry Ellis Set 4 pzs 360 100 ml Eau d…</td>
+      <td class="right"><span class="s-ok">12</span></td>
+      <td class="right" style="font-weight:600">7.7</td>
+      <td class="right" style="color:var(--muted)">5.0</td>
+      <td class="right" style="font-weight:600">4</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:80.0%;background:#10b981"></div></div><span class="bar-label" style="color:#10b981">80.0%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">46</td>
+      <td class="sku">JCVJRO100EDPD</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Juicy Couture Viva la Juicy Rose 100 ml Eau D">Juicy Couture Viva la Juicy Rose 100 m…</td>
+      <td class="right"><span class="s-ok">21</span></td>
+      <td class="right" style="font-weight:600">5.7</td>
+      <td class="right" style="color:var(--muted)">3.7</td>
+      <td class="right" style="font-weight:600">3</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:81.1%;background:#10b981"></div></div><span class="bar-label" style="color:#10b981">81.1%</span></div></td>
+      <td>PCA</td>
+    </tr><tr>
+      <td class="num">47</td>
+      <td class="sku">CUCVIP035EDPD</td>
+      <td><span class="badge" style="background:#10b981">A</span></td>
+      <td class="desc" title="Cuba VIP 35 ml Eau de Parfum Dama">Cuba VIP 35 ml Eau de Parfum Dama</td>
+      <td class="right"><span class="s-ok">46</span></td>
+      <td class="right" style="font-weight:600">46.7</td>
+      <td class="right" style="color:var(--muted)">30.1</td>
+      <td class="right" style="font-weight:600">25</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:83.1%;background:#10b981"></div></div><span class="bar-label" style="color:#10b981">83.1%</span></div></td>
+      <td>PCA</td>
+    </tr></tbody>
+    </table>
+  </div>
+
+  <div class="legend" style="margin-top:12px">
+    <div class="leg"><div class="dot" style="background:var(--red)"></div>Crítico &lt;40%</div>
+    <div class="leg"><div class="dot" style="background:var(--amber)"></div>Bajo 40–70%</div>
+    <div class="leg"><div class="dot" style="background:var(--green)"></div>Moderado 70–85%</div>
+    <div class="leg" style="margin-left:auto">
+      <div class="dot" style="background:var(--muted)"></div>
+      Ritmo = cons. mayo ÷ (prom3M × 20/31) &nbsp;·&nbsp; Esp. a hoy = prom3M × 20/31
+    </div>
+  </div>
+</div>
+
+<div class="footer">ADVEXI · Ventas · 20/05/2026 · Generado desde Forecast_Ordenes_Compra.xlsx</div>
+</body></html>
